@@ -33,14 +33,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      # - name: Test
-      #   run: npm test
-      #   env:
-      #     CPS_URL: ${{ secrets.CPS_URL }}
-      #     CPS_USER: ${{ secrets.CPS_USER }}
-      #     CPS_CID: ${{ secrets.CPS_CID }}
-      #     CPS_PWD: ${{ secrets.CPS_PWD }}
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
