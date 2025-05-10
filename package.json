@@ -1,0 +1,46 @@
+{
+  "name": "@wipsquare/cps-node",
+  "version": "1.0.0",
+  "description": "Interact with CPS API",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --import tsx --test --test-reporter=spec **/*.test.ts",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wipsquare/cps-node.git"
+  },
+  "keywords": [
+    "domains",
+    "cps"
+  ],
+  "author": "Ovidiu Bratosin",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wipsquare/cps-node/issues"
+  },
+  "homepage": "https://github.com/wipsquare/cps-node#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/jstoxml": "^5.0.0",
+    "@types/node": "^22.15.17",
+    "dotenv": "^16.5.0",
+    "semantic-release": "^24.2.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "jstoxml": "^7.0.1",
+    "xml-js": "^1.6.11"
+  }
+}
