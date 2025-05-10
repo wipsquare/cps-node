@@ -1,99 +1,48 @@
-import { Response } from './response.js';
-
-export interface CreateContactParams extends Contact {
-  /**
-   * An ID to be allocated to the contact. If not specified, one will be auto generated
-   */
-  objectId?: string;
-}
+import { BaseReponse } from './api-core.js';
 
 export interface Contact {
-
-  /**
-   * First name of the customer or organisation representative
-   */
   firstname: string;
-
-  /**
-   * Last name of the customer or organisation representative
-   */
   lastname: string;
-
-  /**
-   * Organization name. Manadatory if contact_type='organization'
-   */
   orgname?: string;
-
-  /**
-   * Street address
-   */
   street: string;
-
-  /**
-   * Postal/ZIP code
-   */
   postal: string;
-
-  /**
-   * City
-   */
   city: string;
-
-  /**
-   * State/province
-   */
   state: string;
-
-  /**
-   * Country code (ISO)
-   */
   iso_country: string;
-
-  /**
-   * Phone number (international format)
-   */
   phone: string;
-
-  /**
-   * Fax number (optional)
-   */
   fax?: string;
-
-  /**
-   * Email address
-   */
   email: string;
-
-  /**
-   * Customer type
-   */
   contact_type: 'person' | 'organisation';
-
-  /**
-   * Disclosure preference
-   */
   disclosure?: 'active' | 'disabled';
 }
 
-
-/**
- * Auto-generated values for contact creation
- */
-interface ContactAutoValues {
-  /**
-   * Generated contact ID
-   */
-  contact_id?: string;
+export interface ContactBase {
+  firstname: string;
+  lastname: string;
+  orgname?: string;
+  city: string;
+  email: string;
+  contact_type: 'person' | 'organisation';
+  disclosure: 'active' | 'disabled';
 }
 
-/**
- * Response from contact creation
- * 
- * When %%AUTO%% is used, auto_values will be present with a generated contact_id
- * When a specific objectId is provided, auto_values will be absent
- */
-export interface CreateContactResponse extends Response<string, ContactAutoValues> {
-  // The Response interface already provides the correct structure
+export interface ContactExtended extends ContactBase {
+  street: string;
+  postal: string;
+  state: string;
+  iso_country: string;
+  phone: string;
+  fax?: string;
+}
+
+export interface CreateContactParams extends ContactExtended {
+  contact_id?: string
+}
+
+export interface CreateContactResponse extends BaseReponse {
+  data: {
+    contact_id: string
+  }
 }
 
 /**
@@ -158,66 +107,65 @@ export interface ListContactsParams {
 /**
  * Contact information returned in list operation
  */
-export interface ContactListItem {
-  /**
-   * Unique identifier of the contact
-   */
+export interface ListContactItem {
   contact_id: string;
-  
-  /**
-   * User who owns the contact
-   */
   user: string;
-  
-  /**
-   * First name of the contact
-   */
   firstname: string;
-  
-  /**
-   * Last name of the contact
-   */
   lastname: string;
-  
-  /**
-   * Organization name (if applicable)
-   */
   orgname: string;
-  
-  /**
-   * City of the contact
-   */
   city: string;
-  
-  /**
-   * Email address of the contact
-   */
   email: string;
-  
-  /**
-   * Type of contact
-   */
   contact_type: 'person' | 'organisation';
-  
-  /**
-   * Disclosure preference
-   */
   disclosure: 'active' | 'disabled';
-  
-  /**
-   * Date when the contact was created
-   */
   created: string;
-  
-  /**
-   * Date when the contact was last modified
-   */
   modified: string;
 }
 
 /**
  * Response from listing contacts
  */
-export interface ListContactsResponse extends Response<ContactListItem[]> {
-  // The Response interface already provides the correct structure
+export interface ListContactsResponse extends BaseReponse {
+  data: ListContactItem[]
+}
+
+export interface DeleteContactResponse extends BaseReponse {
+  data: {
+    contact_id: string
+  }
+}
+
+/**
+ * Extended contact information returned by the info operation
+ */
+export interface ContactDetails extends ContactExtended {
+  contact_id: string;
+  created: string;
+  created_by: string;
+  modified: string;
+  modified_by: string;
+  user: string;
+}
+
+/**
+ * Response from getting contact details
+ */
+export interface InfoContactResponse extends BaseReponse {
+  data: ContactDetails
+}
+
+/**
+ * Response from checking contact availability
+ */
+export interface CheckContactResponse extends BaseReponse {
+  data: {
+    /**
+     * The contact ID that was checked
+     */
+    contact_id: string;
+    
+    /**
+     * Whether the contact ID is available (true = available, false = already exists)
+     */
+    available: boolean;
+  }
 }

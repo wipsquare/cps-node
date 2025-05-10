@@ -1,8 +1,8 @@
 import { CPSOptions } from './types/client.js';
 import { HttpClient } from './core/http-client.js';
 import { ApiClient } from './core/api-client.js';
-import { ApiAuth } from './types/api-core.js';
 import { ContactsResource, createContactsResource } from './resources/contacts.js';
+import { DomainsResource, createDomainsResource } from './resources/domains.js';
 // Import other resources as needed
 
 /**
@@ -18,7 +18,7 @@ export class CPSClient {
   readonly contacts: ContactsResource;
   
   // Add other resources as properties
-  // readonly domains: DomainsResource;
+  readonly domains: DomainsResource;
   
   /**
    * Creates a new CPS API client
@@ -48,7 +48,7 @@ export class CPSClient {
     
     // Initialize resources with the API client
     this.contacts = createContactsResource(this.apiClient);
-    // this.domains = createDomainsResource(this.apiClient);
+    this.domains = createDomainsResource(this.apiClient);
     // Initialize other resources...
   }
   

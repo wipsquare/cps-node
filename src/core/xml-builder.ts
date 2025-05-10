@@ -9,8 +9,12 @@ export function buildRequestXml(request: object): string {
   const options = {
     header: '<?xml version="1.0" encoding="utf-8" ?>',
     indent: '    ',
-    newline: '\n'
+    newline: '\n',
+    fullTagEmptyElement: true
   };
+
+  const response = toXML({ request }, options);
+  //console.log({fullxmlrequest: response}) 
   
-  return toXML({ request }, options);
+  return response;
 }

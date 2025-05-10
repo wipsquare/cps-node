@@ -1,6 +1,5 @@
 import { HttpClient } from './http-client.js';
-import { ApiAuth, ApiTransaction, SupportedLanguage } from '../types/api-core.js';
-import { Response } from '../types/response.js';
+import { ApiAuth, ApiTransaction, ApiVersion, SupportedLanguage, ApiClientResponse } from '../types/api-core.js';
 import { CPSError } from '../errors/index.js';
 import { xml2js, ElementCompact } from 'xml-js';
 import { buildRequestXml } from './xml-builder.js';
@@ -29,13 +28,14 @@ export class ApiClient {
    */
   async execute(
     transaction: ApiTransaction<any>,
-    options?: { lang?: SupportedLanguage }
-  ): Promise<Response> {
+    options?: { lang?: SupportedLanguage, version?: ApiVersion }
+  ): Promise<ApiClientResponse> {
     // Build the request
     const request = {
       auth: this.auth,
       transaction,
-      ...(options?.lang ? { lang: options.lang } : { lang: 'en' })
+      ...(options?.lang ? { lang: options.lang } : { lang: 'en' }),
+      ...(options?.version ? { version: options.version } : { version: '1.8.12' }),
     };
     
     // Convert to XML
@@ -43,17 +43,18 @@ export class ApiClient {
 
     // Send the request using the HttpClient
     const response = await this.httpClient.sendRequest(xml);
-
+    // console.log({rawResponse: response.data})
     // Parse the response
     const parsedResponse = this.parseResponse(response.data);
 
     // Handle API-level errors
-    if (parsedResponse.result.code !== '1000') {
+    if (parsedResponse.meta.result.code !== '1000') {
       throw new CPSError(
-        parsedResponse.result.message,
-        parsedResponse.result.code,
-        parsedResponse.result.detail as string,
-        parsedResponse
+        parsedResponse.meta.result.message,
+        parsedResponse.meta.result.code,
+        parsedResponse.meta.result.detail,
+        parsedResponse,
+        undefined // No original error
       );
     }
 
@@ -64,50 +65,42 @@ export class ApiClient {
    * Parses an XML response from the CPS API
    * @private
    */
-  private parseResponse(xml: string): Response {
+  private parseResponse(xml: string): ApiClientResponse {
     const result = xml2js(xml, { compact: true }) as ElementCompact;
     const responseObj = result.response as any;
+    //console.log(responseObj.result.detail)
     
     // Create the base response structure
-    const response: Response = {
-      result: {
-        code: responseObj.result.code._text,
-        detail: responseObj.result.detail._text,
-        message: responseObj.result.message._text
-      },
-      transaction: {
-        active_transactions_id: responseObj.transaction.active_transactions_id._text,
-        created: responseObj.transaction.created._text,
-        customer_ref: responseObj.transaction.customer_ref?._text || ''
+    const response: ApiClientResponse = {
+      responseObject: responseObj,
+      meta: {
+        result: {
+          code: responseObj.result.code._text,
+          message: responseObj.result.message._text,
+          detail: responseObj.result.detail
+        },
+        transaction: {
+          active_transactions_id: responseObj.transaction.active_transactions_id._text,
+          created: responseObj.transaction.created._text,
+          customer_ref: responseObj.transaction.customer_ref?._text || ''
+        }
       }
+      
+      
     };
     
     // Add note if present
     if (responseObj.result.note) {
-      response.result.note = responseObj.result.note._text;
+      response.meta.result.note = responseObj.result.note._text;
     }
     
-    // Add auto_values if present
-    if (responseObj.result.auto_values) {
-      response.result.auto_values = this.parseAutoValues(responseObj.result.auto_values);
+    // Add customer_ref if present
+    if (responseObj.transaction.customer_ref) {
+      response.meta.transaction.customer_ref = responseObj.transaction.customer_ref._text
     }
+
+    //console.log({response})
     
     return response;
-  }
-
-  /**
-   * Parses auto_values from the response
-   * @private
-   */
-  private parseAutoValues(autoValues: any): Record<string, string> {
-    const result: Record<string, string> = {};
-
-    for (const key in autoValues) {
-      if (Object.prototype.hasOwnProperty.call(autoValues, key)) {
-        result[key] = autoValues[key]._text;
-      }
-    }
-
-    return result;
   }
 }
